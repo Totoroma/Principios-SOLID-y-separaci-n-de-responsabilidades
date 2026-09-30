@@ -1,6 +1,6 @@
-# Integración de ventas y stock
+# Principios SOLID y separación de responsabilidades
 
-Proyecto Spring Boot que transforma ventas del POS y las envía a un Sistema B ficticio. El simulador persiste catálogo y existencias en H2.
+Proyecto Spring Boot de integración de ventas y stock. Recibe ventas del POS, las transforma y las envía a un Sistema B ficticio; el simulador persiste catálogo y existencias en H2.
 
 Empezá por el [índice de documentación](Docs/README.md).
 
