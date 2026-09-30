@@ -1,0 +1,4 @@
+**/target/
+fake-sistema-b/*.db
+.vscode/
+.github/modernize/
