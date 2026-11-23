@@ -24,17 +24,18 @@ class StockInventoryPersistenceTest {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private StockInventoryService inventoryService;
+    private ServicioInventarioStock servicioInventarioStock;
 
     @BeforeEach
     void clearInventory() {
+        jdbcTemplate.update("DELETE FROM stock_movimientos_procesados");
         jdbcTemplate.update("DELETE FROM stock_productos");
     }
 
     @Test
     void keepsExactQuantityAfterDatabaseIsClosedAndReopened() {
-        inventoryService.registrarProducto(new ProductoRequest("PRODUCTO-REAL-1"));
-        inventoryService.registrarMovimiento(new MovimientoStockRequest(
+        servicioInventarioStock.registrarProducto(new ProductoRequest("PRODUCTO-REAL-1"));
+        servicioInventarioStock.registrarMovimiento(new MovimientoStockRequest(
                 "ENTRADA",
                 OffsetDateTime.parse("2026-09-24T16:20:35-03:00"),
                 "COMPRA-PERSISTENTE-1",

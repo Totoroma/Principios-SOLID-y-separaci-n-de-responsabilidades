@@ -1,8 +1,8 @@
 package com.example.integracion.mapper;
 
 import com.example.integracion.dto.MovimientoStockRequest;
-import com.example.integracion.dto.ProductoVentaRequest;
-import com.example.integracion.dto.VentaRequest;
+import com.example.integracion.dto.ProductoNormalizado;
+import com.example.integracion.dto.VentaNormalizada;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -18,11 +18,12 @@ class MovimientoStockMapperTest {
     @Test
     void mapsSaleToStockExitWithoutUnitPrice() {
         OffsetDateTime fecha = OffsetDateTime.parse("2026-09-24T16:20:35-03:00");
-        VentaRequest venta = new VentaRequest(
+        VentaNormalizada venta = new VentaNormalizada(
                 154872L,
                 fecha,
                 42L,
-                List.of(new ProductoVentaRequest("7791234567890", 2, new BigDecimal("1250.50")))
+                "A",
+                List.of(new ProductoNormalizado("7791234567890", 2, new BigDecimal("1250.50")))
         );
 
         MovimientoStockRequest movimiento = mapper.toMovimientoStock(venta);

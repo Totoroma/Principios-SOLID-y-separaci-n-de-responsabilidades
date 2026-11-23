@@ -1,6 +1,6 @@
 package com.example.integracion.service;
 
-import com.example.integracion.connector.StockConnector;
+import com.example.integracion.connector.ConectorStock;
 import com.example.integracion.dto.MovimientoManualRequest;
 import com.example.integracion.dto.MovimientoStockRequest;
 import com.example.integracion.dto.ProductoMovimientoRequest;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 class MovimientoManualServiceTest {
 
     @Mock
-    private StockConnector stockConnector;
+    private ConectorStock conectorStock;
 
     @InjectMocks
     private MovimientoManualService service;
@@ -45,7 +45,7 @@ class MovimientoManualServiceTest {
         assertEquals(request.productos(), generated.productos());
 
         ArgumentCaptor<MovimientoStockRequest> captor = ArgumentCaptor.forClass(MovimientoStockRequest.class);
-        verify(stockConnector).registrarMovimiento(captor.capture());
+        verify(conectorStock).registrarMovimiento(captor.capture());
         assertEquals(generated, captor.getValue());
     }
 }

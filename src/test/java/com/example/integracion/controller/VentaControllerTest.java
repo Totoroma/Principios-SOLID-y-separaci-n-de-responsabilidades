@@ -1,6 +1,9 @@
 package com.example.integracion.controller;
 
+import com.example.integracion.dto.VentaNormalizada;
+import com.example.integracion.normalizer.NormalizadorVentaA;
 import com.example.integracion.service.VentaService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -14,8 +17,11 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.doThrow;
@@ -31,6 +37,23 @@ class VentaControllerTest {
 
     @MockitoBean
     private VentaService ventaService;
+
+    @MockitoBean
+    private NormalizadorVentaA normalizadorVentaA;
+
+    @BeforeEach
+    void configurarNormalizador() {
+        when(normalizadorVentaA.normalizar(any())).thenAnswer(invocation -> {
+            com.example.integracion.dto.VentaRequest request = invocation.getArgument(0);
+            return new VentaNormalizada(
+                    request.ventaId(),
+                    request.fecha(),
+                    request.cajeroId(),
+                    "A",
+                    List.of()
+            );
+        });
+    }
 
     @Test
     void acceptsSaleAndDelegatesToService() throws Exception {

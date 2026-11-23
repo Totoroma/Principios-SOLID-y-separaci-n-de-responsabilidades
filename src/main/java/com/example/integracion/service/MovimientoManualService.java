@@ -1,6 +1,6 @@
 package com.example.integracion.service;
 
-import com.example.integracion.connector.StockConnector;
+import com.example.integracion.connector.ConectorStock;
 import com.example.integracion.dto.MovimientoManualRequest;
 import com.example.integracion.dto.MovimientoStockRequest;
 import org.springframework.stereotype.Service;
@@ -12,10 +12,10 @@ import java.util.UUID;
 @Service
 public class MovimientoManualService {
 
-    private final StockConnector stockConnector;
+    private final ConectorStock conectorStock;
 
-    public MovimientoManualService(StockConnector stockConnector) {
-        this.stockConnector = stockConnector;
+    public MovimientoManualService(ConectorStock conectorStock) {
+        this.conectorStock = conectorStock;
     }
 
     public MovimientoStockRequest procesar(MovimientoManualRequest request) {
@@ -27,7 +27,7 @@ public class MovimientoManualService {
                 request.productos()
         );
 
-        stockConnector.registrarMovimiento(movimiento);
+        conectorStock.registrarMovimiento(movimiento);
         return movimiento;
     }
 }

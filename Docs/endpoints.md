@@ -18,7 +18,74 @@ Cabecera: `Content-Type: application/json`.
 }
 ```
 
-Éxito: `200 OK`. Validación: `400`. Los errores de B conservan su estado.
+Éxito: `200 OK` cuando la venta quedó guardada en la integración. El procesamiento de B y C es independiente; un error transitorio deja la operación pendiente y se reintenta. Los rechazos permanentes o el agotamiento de intentos se reflejan como `FALLIDO` en la consulta de estado; no cambian la respuesta de recepción ya confirmada. Validación del JSON: `400`.
+
+## Integración: consultar el estado de una venta
+
+`GET http://localhost:8080/api/ventas/154872`
+
+Devuelve `404` si la venta no fue recibida. Si existe, informa el estado de cada destino:
+
+```json
+{
+  "ventaId": 154872,
+  "operaciones": [
+    {
+      "destino": "B",
+      "estado": "PROCESADO",
+      "intentos": 1,
+      "ultimoError": null,
+      "proximoIntento": null,
+      "procesadoEn": "2026-09-24T19:20:35Z"
+    },
+    {
+      "destino": "C",
+      "estado": "PENDIENTE",
+      "intentos": 2,
+      "ultimoError": "Connection refused",
+      "proximoIntento": "2026-09-24T19:20:45Z",
+      "procesadoEn": null
+    }
+  ]
+}
+```
+
+Los estados de la operación con B son `PENDIENTE`, `EN_PROCESO`, `PROCESADO` y `FALLIDO`. Se reintentan errores de comunicación y respuestas HTTP 5xx, con demora exponencial limitada; los rechazos HTTP 4xx pasan a `FALLIDO`.
+
+La respuesta también incluye la operación con C. El estado de C y sus reintentos son independientes de B. Estados posibles: `PENDIENTE`, `EN_PROCESO`, `PROCESADO` y `FALLIDO`.
+
+## Integración: recibir una venta del sistema A2
+
+`POST http://localhost:8080/api/a2/ventas`
+
+```json
+{
+  "id": "154872",
+  "timestamp": "2026-09-24T16:20:35-03:00",
+  "items": [
+    {"sku": "7791234567890", "units": 2}
+  ]
+}
+```
+
+A2 se normaliza al mismo modelo interno que usa el Sistema A antes de procesar la venta. Ambos comparten el espacio global de `ventaId`.
+Si llega un `ventaId` que ya fue recibido desde cualquiera de los dos sistemas, la integración conserva la primera venta y no vuelve a procesar ni a enviar la segunda. Actualmente no valida si el contenido de la solicitud repetida coincide con la original.
+
+## Integración: notificación de estadísticas al Sistema C
+
+Para cada venta nueva, la integración envía de forma independiente:
+
+```json
+{
+  "ventaId": 154872,
+  "cantidadProductos": 3,
+  "importeTotal": 6001.00
+}
+```
+
+`cantidadProductos` es la suma de las unidades de todos los artículos. `importeTotal` se calcula con cantidad por precio unitario. Si la venta viene de A2, cuyo contrato no incluye precios, el importe se envía como `null`. Los fallos de C se reintentan sin bloquear ni revertir el movimiento de stock de B.
+
+Al activar el perfil `sistema-c`, configurar `sistema-c.base-url` y opcionalmente `sistema-c.ventas-path` en `application.properties`. La ruta predeterminada es `/api/estadisticas/ventas`. Para usar los conectores HTTP reales de ambos sistemas, iniciar con los perfiles `sistema-b,sistema-c`.
 
 ## Integración: movimiento manual abreviado
 

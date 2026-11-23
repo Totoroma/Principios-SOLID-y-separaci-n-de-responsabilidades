@@ -1,24 +1,40 @@
 package com.example.integracion.service;
 
-import com.example.integracion.connector.StockConnector;
-import com.example.integracion.dto.MovimientoStockRequest;
-import com.example.integracion.dto.VentaRequest;
-import com.example.integracion.mapper.MovimientoStockMapper;
+import com.example.integracion.dto.VentaNormalizada;
+import com.example.integracion.dto.RespuestaEstadoOperacion;
+import com.example.integracion.dto.RespuestaEstadoVenta;
+import com.example.integracion.repository.RepositorioVentas;
+import com.example.integracion.repository.RepositorioOutboxEstadisticas;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Optional;
 
 @Service
 public class VentaService {
 
-    private final MovimientoStockMapper mapper;
-    private final StockConnector stockConnector;
+    private final RepositorioVentas repositorioVentas;
+    private final ProcesadorOutboxStock procesadorOutboxStock;
+    private final RepositorioOutboxEstadisticas repositorioOutboxEstadisticas;
 
-    public VentaService(MovimientoStockMapper mapper, StockConnector stockConnector) {
-        this.mapper = mapper;
-        this.stockConnector = stockConnector;
+    public VentaService(RepositorioVentas repositorioVentas, ProcesadorOutboxStock procesadorOutboxStock,
+                        RepositorioOutboxEstadisticas repositorioOutboxEstadisticas) {
+        this.repositorioVentas = repositorioVentas;
+        this.procesadorOutboxStock = procesadorOutboxStock;
+        this.repositorioOutboxEstadisticas = repositorioOutboxEstadisticas;
     }
 
-    public void procesarVenta(VentaRequest venta) {
-        MovimientoStockRequest movimiento = mapper.toMovimientoStock(venta);
-        stockConnector.registrarMovimiento(movimiento);
+    public void procesarVenta(VentaNormalizada venta) {
+        if (repositorioVentas.registrarSiNueva(venta)) {
+            procesadorOutboxStock.procesarSiguiente();
+        }
+    }
+
+    public Optional<RespuestaEstadoVenta> consultarEstado(long ventaId) {
+        return repositorioVentas.consultarEstado(ventaId).map(estado -> {
+            ArrayList<RespuestaEstadoOperacion> operaciones = new ArrayList<>(estado.operaciones());
+            repositorioOutboxEstadisticas.consultarEstado(ventaId).ifPresent(operaciones::add);
+            return new RespuestaEstadoVenta(ventaId, operaciones);
+        });
     }
 }

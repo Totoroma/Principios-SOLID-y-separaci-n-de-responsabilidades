@@ -13,11 +13,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 @Service
-public class StockInventoryService {
+public class ServicioInventarioStock {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public StockInventoryService(JdbcTemplate jdbcTemplate) {
+    public ServicioInventarioStock(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -45,7 +45,7 @@ public class StockInventoryService {
     }
 
     @Transactional
-    public void registrarMovimiento(MovimientoStockRequest movimiento) {
+    public boolean registrarMovimiento(MovimientoStockRequest movimiento) {
         if (!"SALIDA".equals(movimiento.tipoMovimiento())
                 && !"ENTRADA".equals(movimiento.tipoMovimiento())) {
             throw new StockOperationException(400, "Tipo de movimiento inválido",
@@ -55,6 +55,27 @@ public class StockInventoryService {
         Map<String, Integer> cantidades = new TreeMap<>();
         movimiento.productos().forEach(producto ->
                 cantidades.merge(producto.codigoProducto(), producto.cantidad(), Integer::sum));
+
+        String contenido = contenidoMovimiento(movimiento, cantidades);
+        try {
+            jdbcTemplate.update(
+                    "INSERT INTO stock_movimientos_procesados (referencia, contenido) VALUES (?, ?)",
+                    movimiento.referencia(),
+                    contenido
+            );
+        } catch (DuplicateKeyException exception) {
+            String contenidoRegistrado = jdbcTemplate.queryForObject(
+                    "SELECT contenido FROM stock_movimientos_procesados WHERE referencia = ?",
+                    String.class,
+                    movimiento.referencia()
+            );
+            if (!contenido.equals(contenidoRegistrado)) {
+                throw new StockOperationException(409, "Referencia duplicada",
+                        "La referencia " + movimiento.referencia()
+                                + " ya fue usada con otro contenido.");
+            }
+            return false;
+        }
 
         Map<String, Integer> existenciasActuales = new TreeMap<>();
         for (String codigo : cantidades.keySet()) {
@@ -87,5 +108,17 @@ public class StockInventoryService {
                 existenciasActuales.get(codigo) + factor * cantidad,
                 codigo
         ));
+        return true;
+    }
+
+    private String contenidoMovimiento(MovimientoStockRequest movimiento, Map<String, Integer> cantidades) {
+        StringBuilder contenido = new StringBuilder()
+                .append(movimiento.tipoMovimiento())
+                .append('|')
+                .append(movimiento.fecha())
+                .append('|');
+        cantidades.forEach((codigo, cantidad) ->
+                contenido.append(codigo).append('=').append(cantidad).append(';'));
+        return contenido.toString();
     }
 }

@@ -7,7 +7,7 @@
 - **Conexión a Internet en la primera compilación**: Maven descarga dependencias desde Maven Central.
 - **PowerShell** para los comandos de esta guía. Postman es opcional; se puede probar con `Invoke-RestMethod`.
 
-No se requiere instalar un servidor de base de datos, Docker ni Postman. El Sistema B usa H2 embebido, que Maven descarga con las dependencias.
+No se requiere instalar un servidor de base de datos, Docker ni Postman. La integración y el Sistema B usan H2 embebido, que Maven descarga con las dependencias. El Sistema C es externo; para pruebas locales se puede dejar el perfil `sistema-c` apagado y usar su conector simulado.
 
 ## Comprobar instalaciones
 
@@ -35,9 +35,9 @@ Maven instala automáticamente las dependencias descritas en los dos `pom.xml`:
 
 - **Spring Boot 3.5.5 / Spring Web**: endpoints REST y cliente HTTP `RestClient`.
 - **Jakarta Bean Validation**: validación de DTOs con `@Valid` y restricciones.
-- **Spring JDBC y H2**: catálogo e inventario local persistido en un archivo; no se precargan datos de ejemplo.
+- **Spring JDBC y H2**: la integración persiste ventas y outboxes; el simulador B persiste catálogo, existencias y referencias de movimientos procesados. No se precargan productos de ejemplo.
 - **Jackson**: convertir JSON a DTOs y viceversa; se configura para conservar el offset de fecha.
 - **Spring Boot Test, JUnit 5 y Spring Test**: pruebas unitarias/HTTP; incluye `MockMvc` y `MockRestServiceServer`.
-- **`HttpServer` del JDK**: API B temporal en la prueba de extremo a extremo.
+- **`HttpServer` del JDK**: APIs temporales de B y C en las pruebas de extremo a extremo; C no tiene un simulador de aplicación para ejecución local.
 
 En la primera ejecución, Maven puede tardar mientras descarga dependencias. No hace falta instalar esas librerías por separado.

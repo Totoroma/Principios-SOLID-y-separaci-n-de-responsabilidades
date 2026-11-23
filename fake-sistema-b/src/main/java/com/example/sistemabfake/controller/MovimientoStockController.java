@@ -3,7 +3,7 @@ package com.example.sistemabfake.controller;
 import com.example.sistemabfake.dto.MovimientoStockRequest;
 import com.example.sistemabfake.dto.ProductoRequest;
 import com.example.sistemabfake.dto.ProductoStockResponse;
-import com.example.sistemabfake.service.StockInventoryService;
+import com.example.sistemabfake.service.ServicioInventarioStock;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,17 +25,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @RequestMapping("/api/stock")
 public class MovimientoStockController {
 
-    private static final Logger logger = LoggerFactory.getLogger(MovimientoStockController.class);
+    private static final Logger registrador = LoggerFactory.getLogger(MovimientoStockController.class);
     private final List<MovimientoStockRequest> movimientos = new CopyOnWriteArrayList<>();
-    private final StockInventoryService inventoryService;
+    private final ServicioInventarioStock servicioInventarioStock;
     private final String apiKey;
     private final boolean simularErrorInterno;
 
     public MovimientoStockController(
-            StockInventoryService inventoryService,
+            ServicioInventarioStock servicioInventarioStock,
             @Value("${fake-sistema-b.api-key:demo-key}") String apiKey,
             @Value("${fake-sistema-b.simulate-internal-error:false}") boolean simularErrorInterno) {
-        this.inventoryService = inventoryService;
+        this.servicioInventarioStock = servicioInventarioStock;
         this.apiKey = apiKey;
         this.simularErrorInterno = simularErrorInterno;
     }
@@ -49,7 +49,7 @@ public class MovimientoStockController {
             return authorizationError;
         }
 
-        inventoryService.registrarProducto(producto);
+        servicioInventarioStock.registrarProducto(producto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ProductoStockResponse(producto.codigoProducto(), 0));
     }
@@ -68,15 +68,19 @@ public class MovimientoStockController {
                     "El Sistema B ficticio está configurado para simular un fallo interno.");
         }
 
-        inventoryService.registrarMovimiento(movimiento);
-        movimientos.add(movimiento);
-        logger.info("Movimiento recibido: {}", movimiento);
+        boolean movimientoNuevo = servicioInventarioStock.registrarMovimiento(movimiento);
+        if (movimientoNuevo) {
+            movimientos.add(movimiento);
+            registrador.info("Movimiento recibido: {}", movimiento);
+        } else {
+            registrador.info("Movimiento duplicado ignorado: {}", movimiento.referencia());
+        }
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/productos")
     public List<ProductoStockResponse> listarProductos() {
-        return inventoryService.listarProductos();
+        return servicioInventarioStock.listarProductos();
     }
 
     @GetMapping("/movimientos")

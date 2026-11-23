@@ -4,7 +4,7 @@ Esta guía sirve para probar operaciones manuales. El POS real sigue usando `POS
 
 ## Antes de empezar
 
-Dejá iniciados el Sistema B en `localhost:3000` y la integración con el perfil `sistema-b` en `localhost:8080`, como se explica en [Ejecución y pruebas](ejecucion-y-pruebas.md). Abrí una tercera terminal PowerShell en la raíz del proyecto.
+Dejá iniciados el Sistema B en `localhost:3000` y la integración con el perfil `sistema-b` en `localhost:8080`, como se explica en [Ejecución y pruebas](ejecucion-y-pruebas.md). El conector de C queda simulado si no activás `sistema-c`. Abrí una tercera terminal PowerShell en la raíz del proyecto.
 
 ## 1. Dar de alta un producto
 

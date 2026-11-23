@@ -33,6 +33,7 @@ class MovimientoStockControllerTest {
 
     @BeforeEach
     void clearProducts() {
+        jdbcTemplate.update("DELETE FROM stock_movimientos_procesados");
         jdbcTemplate.update("DELETE FROM stock_productos");
     }
 
@@ -87,6 +88,22 @@ class MovimientoStockControllerTest {
                 .andExpect(jsonPath("$.title").value("Stock insuficiente"));
 
         assertEquals(4, consultarStock("7791234567890"));
+    }
+
+    @Test
+    void appliesIdenticalMovementReferenceOnlyOnce() throws Exception {
+        registerProduct("7791234567890");
+        postMovement("ENTRADA", "COMPRA-IDEMPOTENTE", "7791234567890", 10)
+                .andExpect(status().isNoContent());
+        postMovement("ENTRADA", "COMPRA-IDEMPOTENTE", "7791234567890", 10)
+                .andExpect(status().isNoContent());
+
+        assertEquals(10, consultarStock("7791234567890"));
+
+        postMovement("ENTRADA", "COMPRA-IDEMPOTENTE", "7791234567890", 5)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Referencia duplicada"));
+        assertEquals(10, consultarStock("7791234567890"));
     }
 
     @Test

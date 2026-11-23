@@ -1,6 +1,6 @@
 # Documentación de la integración
 
-Guía de POS → integración → Sistema B ficticio. Está orientada a Windows y PowerShell.
+Guía de los sistemas A/A2 → integración → Sistema B (stock) y Sistema C (estadísticas). Está orientada a Windows y PowerShell.
 
 ## Guías
 
@@ -40,15 +40,19 @@ integracion-stock/
 ├── src/
 │   ├── main/java/com/example/integracion/
 │   │   ├── IntegracionApplication.java
-│   │   ├── connector/
-│   │   ├── controller/
-│   │   ├── dto/
-│   │   ├── mapper/MovimientoStockMapper.java
-│   │   └── service/
-│   ├── main/resources/application.properties
+│   │   ├── connector/          # adaptadores HTTP y simulados para B y C
+│   │   ├── controller/        # entrada de A, A2 y consulta de estado
+│   │   ├── dto/               # contratos externos y venta canónica
+│   │   ├── mapper/
+│   │   ├── normalizer/        # normalizadores de A y A2
+│   │   ├── repository/        # persistencia y outboxes de B y C
+│   │   └── service/           # procesadores independientes de cada outbox
+│   ├── main/resources/
+│   │   ├── application.properties
+│   │   └── schema.sql
 │   └── test/java/com/example/integracion/
 ├── pom.xml
 └── README.md
 ```
 
-El catálogo y los saldos se guardan en `fake-sistema-b/sistema-b.mv.db`, excluido por `.gitignore`. Los directorios `target/` se generan al compilar.
+La integración guarda ventas y estados de entrega en `integracion-stock.mv.db`; el catálogo, los saldos y las referencias procesadas se guardan en `fake-sistema-b/sistema-b.mv.db`. Ambos archivos se excluyen por `.gitignore`. Los directorios `target/` se generan al compilar.

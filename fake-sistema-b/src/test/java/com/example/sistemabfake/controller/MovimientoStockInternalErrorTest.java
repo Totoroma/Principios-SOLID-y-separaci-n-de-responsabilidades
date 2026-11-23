@@ -7,7 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import com.example.sistemabfake.service.StockInventoryService;
+import com.example.sistemabfake.service.ServicioInventarioStock;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -21,7 +21,7 @@ class MovimientoStockInternalErrorTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private StockInventoryService inventoryService;
+    private ServicioInventarioStock servicioInventarioStock;
 
     @Test
     void returnsInternalServerErrorWhenSimulationIsEnabled() throws Exception {

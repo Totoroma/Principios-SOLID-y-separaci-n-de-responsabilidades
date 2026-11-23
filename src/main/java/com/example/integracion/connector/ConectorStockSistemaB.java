@@ -9,15 +9,15 @@ import org.springframework.web.client.RestClient;
 
 @Component
 @Profile("sistema-b")
-public class SistemaBStockConnector implements StockConnector {
+public class ConectorStockSistemaB implements ConectorStock {
 
-    private final RestClient restClient;
+    private final RestClient clienteRest;
 
-    public SistemaBStockConnector(
+    public ConectorStockSistemaB(
             RestClient.Builder builder,
             @Value("${sistema-b.base-url:http://localhost:3000}") String baseUrl,
             @Value("${sistema-b.api-key:demo-key}") String apiKey) {
-        this.restClient = builder
+        this.clienteRest = builder
                 .baseUrl(baseUrl)
                 .defaultHeader("X-API-Key", apiKey)
                 .build();
@@ -25,7 +25,7 @@ public class SistemaBStockConnector implements StockConnector {
 
     @Override
     public void registrarMovimiento(MovimientoStockRequest movimiento) {
-        restClient
+        clienteRest
                 .post()
                 .uri("/api/stock/movimiento")
                 .body(movimiento)

@@ -25,7 +25,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withForbiddenRequest;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-class SistemaBStockConnectorTest {
+class ConectorStockSistemaBTest {
 
     private static final String BASE_URL = "http://sistema-b.test";
     private static final String EXPECTED_BODY = """
@@ -41,9 +41,9 @@ class SistemaBStockConnectorTest {
 
     @Test
     void postsExpectedStockMovementToSistemaB() {
-                RestClient.Builder builder = restClientBuilder();
+                RestClient.Builder builder = crearConstructorClienteRest();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-        SistemaBStockConnector connector = new SistemaBStockConnector(builder, BASE_URL, "demo-key");
+                ConectorStockSistemaB conector = new ConectorStockSistemaB(builder, BASE_URL, "demo-key");
 
         server.expect(requestTo(BASE_URL + "/api/stock/movimiento"))
                 .andExpect(method(HttpMethod.POST))
@@ -51,39 +51,39 @@ class SistemaBStockConnectorTest {
                 .andExpect(content().json(EXPECTED_BODY))
                 .andRespond(withSuccess());
 
-        connector.registrarMovimiento(movimiento());
+        conector.registrarMovimiento(movimiento());
 
         server.verify();
     }
 
     @Test
     void propagatesErrorWhenSistemaBReturnsServerFailure() {
-                RestClient.Builder builder = restClientBuilder();
+                RestClient.Builder builder = crearConstructorClienteRest();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-        SistemaBStockConnector connector = new SistemaBStockConnector(builder, BASE_URL, "demo-key");
+                ConectorStockSistemaB conector = new ConectorStockSistemaB(builder, BASE_URL, "demo-key");
 
         server.expect(requestTo(BASE_URL + "/api/stock/movimiento"))
                 .andExpect(method(HttpMethod.POST))
                 .andRespond(withServerError());
 
         assertThrows(RestClientResponseException.class,
-                () -> connector.registrarMovimiento(movimiento()));
+                () -> conector.registrarMovimiento(movimiento()));
 
         server.verify();
     }
 
         @Test
         void propagatesForbiddenResponseFromSistemaB() {
-                RestClient.Builder builder = restClientBuilder();
+                RestClient.Builder builder = crearConstructorClienteRest();
                 MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-                SistemaBStockConnector connector = new SistemaBStockConnector(builder, BASE_URL, "demo-key");
+                ConectorStockSistemaB conector = new ConectorStockSistemaB(builder, BASE_URL, "demo-key");
 
                 server.expect(requestTo(BASE_URL + "/api/stock/movimiento"))
                                 .andExpect(method(HttpMethod.POST))
                                 .andRespond(withForbiddenRequest());
 
                 assertThrows(RestClientResponseException.class,
-                                () -> connector.registrarMovimiento(movimiento()));
+                                () -> conector.registrarMovimiento(movimiento()));
 
                 server.verify();
         }
@@ -97,7 +97,7 @@ class SistemaBStockConnectorTest {
         );
     }
 
-        private RestClient.Builder restClientBuilder() {
+        private RestClient.Builder crearConstructorClienteRest() {
                 ObjectMapper objectMapper = new ObjectMapper()
                                 .registerModule(new JavaTimeModule())
                                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)

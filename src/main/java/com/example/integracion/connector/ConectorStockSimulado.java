@@ -8,12 +8,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Profile("!sistema-b")
-public class MockStockConnector implements StockConnector {
+public class ConectorStockSimulado implements ConectorStock {
 
-    private static final Logger logger = LoggerFactory.getLogger(MockStockConnector.class);
+    private static final Logger registrador = LoggerFactory.getLogger(ConectorStockSimulado.class);
 
     @Override
     public void registrarMovimiento(MovimientoStockRequest movimiento) {
-        logger.info("Movimiento de stock simulado: {}", movimiento);
+        registrador.info("Movimiento de stock simulado: {}", movimiento);
     }
 }
